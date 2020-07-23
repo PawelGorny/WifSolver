@@ -1,0 +1,11 @@
+Usage:
+java -jar wifSolver.jar input.conf [email.conf]
+
+Available solvers:
+END - for WIF with missing characters at the end
+ROTATE - for WIF with one wrong character on unknown position
+SEARCH - for WIF with one or more unknown characters on known positions, with unknown or suspected candidates
+ALIKE - for WIF with misspelled characters, with set of suspected replacements
+JUMP - experimental, for WIF with missing characters in the first part, brute-force faster than SEARCH
+For details, please check the corresponding example files.
+

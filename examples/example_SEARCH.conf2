@@ -1,0 +1,18 @@
+#typical brute-force approach - test all possible combinations of missing characters
+#1st line: type of work
+SEARCH
+#target: L5EZftvrYaSudiozVRzTqLcHLNDoVn7H5HSfM9BAN6tMJX8oTWz6
+#2nd line: WIF with unknown characters
+#as it is possible to resume partially done work, we may add last known WIF status,
+#so work will be continued from the added WIF
+L5EZftvrYaSudiozVRzTqLcHLND____H_HSfM9BAN6tMJX8oTWz6,L5EZftvrYaSudiozVRzTqLcHLNDckk2H5HSfM9BAN6tMJX8oTWz6
+#3rd line: expected address
+1EUXSxuUVy2PC5enGXR1a3yxbEjNWMHuem
+#following lines: expected characters or '*' for all possible characters from Base58 encoding
+#each line corresponds to one missing character (posiotion) in WIF
+#missing characters without hint will use full Base58 characters set
+#in this example we have 4 hints for 5 missing characters
+acoeus
+AaBbcCNnMmXxkKhHvV
+*
+123456789ABCDEFGHIJKLMN

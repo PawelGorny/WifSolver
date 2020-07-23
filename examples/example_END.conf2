@@ -1,0 +1,8 @@
+#this solver tries to fnd WIF with missing characters at the end
+#1st line: type of work
+END
+#target: L5EZftvrYaSudiozVRzTqLcHLNDoVn7H5HSfM9BAN6tMJX8oTWz6
+#2nd line: WIF with missing end
+L5EZftvrYaSudiozVRzTqLcHLNDoVn7H5HSfM9BAN6tM
+#3rd end: expected address, if you know one
+1EUXSxuUVy2PC5enGXR1a3yxbEjNWMHuem

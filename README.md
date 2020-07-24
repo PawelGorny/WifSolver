@@ -33,7 +33,7 @@ Configuration file example, with 8 characters missing and searching for particul
     L5EZftvrYaSudiozVRzTqLcHLNDoVn7H5HSfM9BAN6tM
     1EUXSxuUVy2PC5enGXR1a3yxbEjNWMHuem
 
-<li><SEARCH></li>
+<li>SEARCH</li>
 This mode expects input with marked positions of unknown characters. For each position it is possible to specify a set of suspected characters.
 If set is not provided, program will use the full Base58 set.
 Configuration file example with 6 missing characters in the middle. For the first 4 positions set of probable characters is provided (for characters 3&5 it is the whole Base58 set).

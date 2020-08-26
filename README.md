@@ -106,7 +106,7 @@ TODO
 <ol>
 <li>GUI</li>
 <li>adapt number of threads used to user's machine</li>
-<li>saving result and (periodically) status to file</li>
+<li>saving (periodically) status to file</li>
 <li>new modes?</li>
 </ol>
  

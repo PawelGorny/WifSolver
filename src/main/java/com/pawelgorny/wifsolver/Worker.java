@@ -9,6 +9,9 @@ import javax.mail.MessagingException;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.SortedSet;
@@ -17,7 +20,7 @@ import java.util.TreeSet;
 class Worker {
 
     private static final SortedSet<String> WIF_RESULTS  = Collections.synchronizedSortedSet(new TreeSet<>());
-
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
     private final Configuration configuration;
 
     public Worker(Configuration configuration) {
@@ -47,11 +50,26 @@ class Worker {
                 break;
         }
         worker.run();
-
+        System.out.println("");
+        System.out.println("");
         System.out.println("--- Work finished ---");
         System.out.println("Worker '"+configuration.getWork().name()+"' ended, "+WIF_RESULTS.size()+" result(s) "+(new Date()));
         WIF_RESULTS.forEach(System.out::println);
+        resultToFile();
         sendEmail("Worker '"+configuration.getWork().name()+"' ended, "+WIF_RESULTS.size()+" result(s)", String.join("\n", WIF_RESULTS));
+    }
+
+    private void resultToFile() {
+        try {
+            FileWriter fileWriter = new FileWriter(this.configuration.getWork().name() + "_result_" + dateFormat.format(new Date()) + ".txt", false);
+            for (String s : WIF_RESULTS) {
+                fileWriter.write(s);
+                fileWriter.write("\r\n");
+            }
+            fileWriter.close();
+        } catch (IOException e) {
+            System.out.println("Cannot write to file: " + e.getLocalizedMessage());
+        }
     }
 
     void addResult(String data){

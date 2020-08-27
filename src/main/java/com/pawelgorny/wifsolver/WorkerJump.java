@@ -16,11 +16,11 @@ import java.util.concurrent.Executors;
 class WorkerJump extends Worker {
 
     private final Configuration configuration;
+    private final long ITERATIONS_PER_THREAD = 2_000_000L;
     private BigInteger LIMIT;
     private BigInteger DIFF;
     private String STARTER;
     private String RESULT = null;
-    private final long ITERATIONS_PER_THREAD = 2_000_000L;
 
 
     public WorkerJump(Configuration configuration) {
@@ -37,18 +37,18 @@ class WorkerJump extends Worker {
         byte[] bytes = Base58.decode(STARTER);
         String hex = bytesToHex(bytes);
         BigInteger priv = new BigInteger(hex, 16);
-        final String suffix = hex.substring(hex.length() - 7);
+        final String suffix = hex.substring(hex.length() - 8);
         long count = 0;
         long jumpNb = 0;
         long falseJump =0;
         long firstJump =0;
-        Set<Long> jumpLength = new HashSet<>();
+        Set<Long> jumpLength = new HashSet<>(2);
         while(jumpNb<10) {
             do {
                 count++;
                 priv = priv.add(DIFF);
                 bytes = hexStringToByteArray(priv.toString(16));
-            } while (count<8192 && (bytes[33] != 1 && !priv.toString(16).endsWith(suffix)));
+            } while (count < 8192 && (bytes[33] != 1 || !priv.toString(16).endsWith(suffix)));
             if (count==8192){
                 System.out.println(":-( Skipping " + STARTER + ", cannot find the proper ending");
                 return;

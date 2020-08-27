@@ -55,7 +55,9 @@ class Worker {
         System.out.println("--- Work finished ---");
         System.out.println("Worker '"+configuration.getWork().name()+"' ended, "+WIF_RESULTS.size()+" result(s) "+(new Date()));
         WIF_RESULTS.forEach(System.out::println);
-        resultToFile();
+        if (!WIF_RESULTS.isEmpty()) {
+            resultToFile();
+        }
         sendEmail("Worker '"+configuration.getWork().name()+"' ended, "+WIF_RESULTS.size()+" result(s)", String.join("\n", WIF_RESULTS));
     }
 

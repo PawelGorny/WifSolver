@@ -153,7 +153,7 @@ public class Main {
             }
             System.out.println("Requested '"+work+"' solver, source WIF: '"+wif+"'");
             if (targetAddress!=null){
-                System.out.println("Expected address: '"+targetAddress);
+                System.out.println("Expected address: '" + targetAddress + "'");
             }
         } catch (IOException e) {
             System.err.println("error: " + e.getLocalizedMessage());
@@ -202,8 +202,8 @@ public class Main {
            }
         }
         if (WORK.ROTATE.equals(work)){
-            if (wif.length()!=51 && wif.length()!=52){
-                System.out.println("Incorrect WIF length ("+wif.length()+"), should be 52 or 51.");
+            if (wif.length() != 51 && wif.length() != Configuration.COMPRESSED_WIF_LENGTH) {
+                System.out.println("Incorrect WIF length (" + wif.length() + "), should be " + Configuration.COMPRESSED_WIF_LENGTH + " or 51.");
                 System.exit(-1);
             }
         }

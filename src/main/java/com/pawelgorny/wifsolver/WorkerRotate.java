@@ -21,7 +21,7 @@ class WorkerRotate extends Worker {
         int len = configuration.getWif().length();
         try {
             ecKey = DumpedPrivateKey.fromBase58(Configuration.getNetworkParameters(), configuration.getWif()).getKey();
-            String foundAddress = len==52?LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey).toString()
+            String foundAddress = this.configuration.isCompressed() ? LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey).toString()
                     :LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey.decompress()).toString();
             super.addResult(configuration.getWif() + " -> " + foundAddress);
             System.out.println(configuration.getWif() + " -> " + foundAddress);
@@ -29,12 +29,12 @@ class WorkerRotate extends Worker {
         }catch (Exception e){
             System.out.println("Initial "+configuration.getWif()+" incorrect, starting rotation");
         }
-        for (int c=0; c<len-4; c++){
+        for (int c = 0; c < len; c++) {
             for (int z=0; z< Base58.ALPHABET.length ;z++) {
                 stringBuilder.setCharAt(c, Base58.ALPHABET[z]);
                 try {
                     ecKey = DumpedPrivateKey.fromBase58(Configuration.getNetworkParameters(), stringBuilder.toString()).getKey();
-                    String foundAddress = len==52?LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey).toString()
+                    String foundAddress = this.configuration.isCompressed() ? LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey).toString()
                             :LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey.decompress()).toString();
                     if (configuration.getTargetAddress()!=null){
                         if(foundAddress.equals(configuration.getTargetAddress())) {

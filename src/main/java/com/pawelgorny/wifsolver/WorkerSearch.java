@@ -17,11 +17,12 @@ class WorkerSearch extends Worker {
     private final Map<Integer, Integer> GUESS_IX = new HashMap<>(0);
     private final StringBuilder WIF;
     private final int[] STARTER;
+    private final int THREADS_MIN = 2;
     private boolean START_ZERO;
     private Integer THREAD_BREAK = null;
     private String RESULT = null;
     private long start = 0;
-    private int THREADS = 2;
+    private int THREADS = THREADS_MIN;
 
     public WorkerSearch(Configuration configuration) {
         super(configuration);
@@ -30,6 +31,17 @@ class WorkerSearch extends Worker {
         STARTER = new int[configuration.getWif().length()];
         configureHints();
         configureStart();
+    }
+
+    private static int findIx(char[] a, char v) {
+        int i = 0;
+        for (char c : a) {
+            if (c == v) {
+                return i;
+            }
+            i++;
+        }
+        return 0;
     }
 
     @Override
@@ -91,8 +103,6 @@ class WorkerSearch extends Worker {
         }
     }
 
-
-
     private void configureStart() {
         if (configuration.getWifStatus()==null){
             START_ZERO = true;
@@ -115,9 +125,9 @@ class WorkerSearch extends Worker {
         List<Integer> ranges = new ArrayList<>(0);
         for (int c=0; c<configuration.getWif().length(); c++){
             if (Configuration.UNKNOWN_CHAR == configuration.getWif().charAt(c)){
-                char[] hints = configuration.getGuess().get(guessIx++);
-                if (hints==null){
-                    hints = Base58.ALPHABET;
+                char[] hints = Base58.ALPHABET;
+                if (configuration.getGuess() != null && configuration.getGuess().get(guessIx) != null) {
+                    hints = configuration.getGuess().get(guessIx++);
                 }
                 GUESS.put(c, hints);
                 GUESS_IX.put(GUESS_IX.size(), c);
@@ -133,22 +143,15 @@ class WorkerSearch extends Worker {
             }
             if (count>=1_000_000 && ranges.get(c)>1){
                 THREAD_BREAK = c;
-                if (ranges.get(c)>4){
-                    THREADS = 4;
+                if (ranges.get(c) > THREADS_MIN) {
+                    int procs = Runtime.getRuntime().availableProcessors();
+                    if (procs < 1) {
+                        procs = THREADS_MIN;
+                    }
+                    THREADS = Math.min(procs, ranges.get(c));
                 }
                 break;
             }
         }
-    }
-
-    private static int findIx(char[] a, char v){
-        int i = 0;
-        for (char c:a){
-            if (c==v){
-                return i;
-            }
-            i++;
-        }
-        return 0;
     }
 }

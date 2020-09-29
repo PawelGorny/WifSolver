@@ -99,11 +99,11 @@ class Worker {
     protected String workThread(String suspect){
         try{
             byte[] bytes = Base58.decode(suspect);
-            if (bytes[33]!=1){
+            if (this.configuration.isCompressed() && bytes[33] != 1) {
                 return null;
             }
             ECKey ecKey = DumpedPrivateKey.fromBase58(Configuration.getNetworkParameters(), suspect).getKey();
-            String foundAddress = suspect.length()==52? LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey).toString()
+            String foundAddress = this.configuration.isCompressed() ? LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey).toString()
                     :LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey.decompress()).toString();
             addResult(suspect + " -> " + foundAddress);
             System.out.println(suspect + " -> " + foundAddress);
@@ -111,7 +111,7 @@ class Worker {
                 return suspect;
             }
         }catch (Exception ex){
-            //wif incorrect
+            //wif incorrect (checksum?)
         }
         return null;
     }

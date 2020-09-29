@@ -138,7 +138,7 @@ class WorkerJump extends Worker {
         try {
             ECKey ecKey = DumpedPrivateKey.fromBase58(Configuration.getNetworkParameters(), Base58.encode(bytes)).getKey();
             String encoded =  Base58.encode(bytes);
-            String foundAddress = encoded.length()==52?LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey).toString()
+            String foundAddress = encoded.length() == Configuration.COMPRESSED_WIF_LENGTH ? LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey).toString()
                     :LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey.decompress()).toString();
             if(configuration.getTargetAddress().equals(foundAddress)){
                 super.addResult(encoded + " -> " + foundAddress);
@@ -150,7 +150,7 @@ class WorkerJump extends Worker {
                 System.out.println(encoded + " -> " + foundAddress);
             }
         }catch (Exception e){
-            //incorrent wif
+            //incorrect wif
         }
         return false;
     }

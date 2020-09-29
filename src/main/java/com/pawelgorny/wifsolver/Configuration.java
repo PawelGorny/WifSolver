@@ -9,6 +9,7 @@ import java.util.Map;
 public class Configuration {
     final static char UNKNOWN_CHAR='_';
     final static String COMMENT_CHAR="#";
+    final static int COMPRESSED_WIF_LENGTH = 52;
 
     private final static NetworkParameters NETWORK_PARAMETERS = MainNetParams.get();
     private final static int STATUS_PERIOD = 60 * 1000; //1 minute
@@ -20,15 +21,29 @@ public class Configuration {
     private final String wifStatus;
     private final WORK work;
     private final Map<Integer, char[]> guess;
+    private boolean compressed;
 
     private EmailConfiguration emailConfiguration = null;
 
     public Configuration(String targetAddress, String wif, String wifStatus, WORK work, Map<Integer, char[]> guess) {
         this.targetAddress = targetAddress;
         this.wif = wif;
+        this.compressed = wif.length() == COMPRESSED_WIF_LENGTH;
         this.wifStatus = wifStatus;
         this.work = work;
         this.guess = guess.isEmpty()?null:guess;
+    }
+
+    public static int getChecksumChars() {
+        return CHECKSUM_CHARS;
+    }
+
+    public static NetworkParameters getNetworkParameters() {
+        return NETWORK_PARAMETERS;
+    }
+
+    public static int getStatusPeriod() {
+        return STATUS_PERIOD;
     }
 
     public String getTargetAddress() {
@@ -51,24 +66,16 @@ public class Configuration {
         return wifStatus;
     }
 
-    public static int getChecksumChars() {
-        return CHECKSUM_CHARS;
-    }
-
-    public static NetworkParameters getNetworkParameters() {
-        return NETWORK_PARAMETERS;
-    }
-
-    public static int getStatusPeriod() {
-        return STATUS_PERIOD;
-    }
-
     public void setEmailConfiguration(String emailFrom,  Session mailSession) {
         this.emailConfiguration = new EmailConfiguration(emailFrom, mailSession);
     }
 
     public EmailConfiguration getEmailConfiguration() {
         return emailConfiguration;
+    }
+
+    public boolean isCompressed() {
+        return compressed;
     }
 
     class EmailConfiguration{

@@ -97,24 +97,19 @@ class WorkerJump extends Worker {
             }
             executorService = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
             final CountDownLatch latch = new CountDownLatch(NUMBER_OF_THREADS);
-            BigInteger privThread1 = priv;
-            executorService.submit(() -> {
-                try {
-                    workerThread(privThread1, toAdd);
-                    latch.countDown();
-                } catch (Exception e) {
-                    Thread.currentThread().interrupt();
-                }
-            });
-            BigInteger privThread2 = priv.add(threadDiff);
-            executorService.submit(() -> {
-                try {
-                    workerThread(privThread2, toAdd);
-                    latch.countDown();
-                } catch (Exception e) {
-                    Thread.currentThread().interrupt();
-                }
-            });
+            BigInteger privThread = priv;
+            for (int t = 0; t < NUMBER_OF_THREADS; t++) {
+                final BigInteger pt = privThread;
+                executorService.submit(() -> {
+                    try {
+                        workerThread(pt, toAdd);
+                        latch.countDown();
+                    } catch (Exception e) {
+                        Thread.currentThread().interrupt();
+                    }
+                });
+                privThread = privThread.add(threadDiff);
+            }
             latch.await();
             executorService.shutdown();
             for (int i=0;i<NUMBER_OF_THREADS;i++) {
@@ -132,10 +127,12 @@ class WorkerJump extends Worker {
     private void workerThread(BigInteger privThread, BigInteger step){
         int iterations = 0;
 
-        while(iterations<ITERATIONS_PER_THREAD && RESULT==null){
+        while (iterations < ITERATIONS_PER_THREAD && RESULT == null && LIMIT.compareTo(privThread) > 0) {
             iterations++;
             privThread = privThread.add(step);
-            check(privThread);
+            if (check(privThread)) {
+                return;
+            }
         }
     }
 
@@ -167,12 +164,12 @@ class WorkerJump extends Worker {
             if (configuration.getWif().charAt(i)==Configuration.UNKNOWN_CHAR){
                 DIFF = BigInteger.ONE.multiply(BigInteger.valueOf(58L)).pow(p);
                 System.out.println("DIFF: 58^" + p);
-                if (p < 32) {
-                    suffixLen--;
-                    if (p < 28) {
-                        suffixLen--;
-                    }
-                }
+//                if (p < 31) {
+//                    suffixLen--;
+//                    if (p < 28) {
+//                        suffixLen--;
+//                    }
+//                }
                 break;
             }
         }

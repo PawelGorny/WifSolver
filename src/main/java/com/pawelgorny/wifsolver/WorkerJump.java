@@ -16,12 +16,15 @@ import java.util.concurrent.Executors;
 class WorkerJump extends Worker {
 
     private final Configuration configuration;
-    private final long ITERATIONS_PER_THREAD = 2_000_000L;
+    private final long ITERATIONS_PER_THREAD = 1_000_000L;
     private BigInteger LIMIT;
     private BigInteger DIFF;
     private String STARTER;
     private String RESULT = null;
-
+    private int bSize;
+    private int sLen;
+    private int suffixLen = 8;
+    private int NUMBER_OF_THREADS = 2;
 
     public WorkerJump(Configuration configuration) {
         super(configuration);
@@ -32,28 +35,31 @@ class WorkerJump extends Worker {
 
     @Override
     protected void run() throws InterruptedException {
-        final int NUMBER_OF_THREADS = 2;
         long start = System.currentTimeMillis();
         byte[] bytes = Base58.decode(STARTER);
         String hex = bytesToHex(bytes);
         BigInteger priv = new BigInteger(hex, 16);
-        final String suffix = hex.substring(hex.length() - 8);
+        final String suffix = hex.substring(hex.length() - suffixLen);
         long count = 0;
         long jumpNb = 0;
         long falseJump =0;
         long firstJump =0;
         Set<Long> jumpLength = new HashSet<>(2);
+        boolean renew = false;
         while(jumpNb<10) {
             do {
                 count++;
                 priv = priv.add(DIFF);
-                bytes = hexStringToByteArray(priv.toString(16));
-            } while (count < 8192 && (bytes[33] != 1 || !priv.toString(16).endsWith(suffix)));
+                if (configuration.isCompressed()) {
+                    bytes = hexStringToByteArray(priv.toString(16));
+                    renew = bytes[33] != 1;
+                }
+            } while (count < 8192 && (renew || !priv.toString(16).endsWith(suffix)));
             if (count==8192){
                 System.out.println(":-( Skipping " + STARTER + ", cannot find the proper ending");
                 return;
             }else{
-                if (bytes[33] != 1){
+                if (configuration.isCompressed() && bytes[33] != 1) {
                     falseJump++;
                     if(falseJump==2048){
                         System.out.println(":-( Skipping " + STARTER + ", cannot find the proper compression byte");
@@ -86,7 +92,7 @@ class WorkerJump extends Worker {
         }
         do {
             if (System.currentTimeMillis()-start > Configuration.getStatusPeriod()){
-                System.out.println("Alive! "+ priv.toString(16) + " " + Base58.encode(hexStringToByteArray(priv.toString(16))) + " " + (new Date()));
+                System.out.println("Alive " + priv.toString(16) + " " + Base58.encode(hexStringToByteArray(priv.toString(16))) + " " + (new Date()));
                 start = System.currentTimeMillis();
             }
             executorService = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
@@ -160,6 +166,13 @@ class WorkerJump extends Worker {
         for (int p=0, i=configuration.getWif().length()-1; i>=0; i--, p++){
             if (configuration.getWif().charAt(i)==Configuration.UNKNOWN_CHAR){
                 DIFF = BigInteger.ONE.multiply(BigInteger.valueOf(58L)).pow(p);
+                System.out.println("DIFF: 58^" + p);
+                if (p < 32) {
+                    suffixLen--;
+                    if (p < 28) {
+                        suffixLen--;
+                    }
+                }
                 break;
             }
         }
@@ -172,6 +185,13 @@ class WorkerJump extends Worker {
         byte[] bytes = Base58.decode(wifTop);
         String hex = bytesToHex(bytes);
         LIMIT = new BigInteger(hex, 16);
+        sLen = configuration.isCompressed() ? 76 : 74;
+        bSize = sLen >> 1;
+        int procs = Runtime.getRuntime().availableProcessors();
+        if (procs < 1) {
+            procs = 2;
+        }
+        NUMBER_OF_THREADS = procs;
     }
 
     private String bytesToHex(byte[] bytes) {
@@ -181,8 +201,8 @@ class WorkerJump extends Worker {
     }
 
     private byte[] hexStringToByteArray(String s) {
-        byte[] data = new byte[38];
-        for (int i = 0; i < 76; i += 2) {
+        byte[] data = new byte[bSize];
+        for (int i = 0; i < sLen; i += 2) {
             data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
                     + Character.digit(s.charAt(i+1), 16));
         }

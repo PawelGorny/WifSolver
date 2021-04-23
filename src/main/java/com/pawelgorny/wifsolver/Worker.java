@@ -22,6 +22,7 @@ class Worker {
     private static final SortedSet<String> WIF_RESULTS  = Collections.synchronizedSortedSet(new TreeSet<>());
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
     private final Configuration configuration;
+    private final long timeId = System.currentTimeMillis();
 
     public Worker(Configuration configuration) {
         this.configuration = configuration;
@@ -74,6 +75,17 @@ class Worker {
         }
     }
 
+    protected synchronized void resultToFilePartial(String data) {
+        try {
+            FileWriter fileWriter = new FileWriter(this.configuration.getWork().name() + "_resultPartial_" + timeId + ".txt", true);
+            fileWriter.write(data);
+            fileWriter.write("\r\n");
+            fileWriter.close();
+        } catch (IOException e) {
+            System.out.println("Cannot write to file: " + e.getLocalizedMessage());
+        }
+    }
+
     void addResult(String data){
         WIF_RESULTS.add(data);
     }
@@ -105,8 +117,10 @@ class Worker {
             ECKey ecKey = DumpedPrivateKey.fromBase58(Configuration.getNetworkParameters(), suspect).getKey();
             String foundAddress = this.configuration.isCompressed() ? LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey).toString()
                     :LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey.decompress()).toString();
-            addResult(suspect + " -> " + foundAddress);
-            System.out.println(suspect + " -> " + foundAddress);
+            String data = suspect + " -> " + foundAddress;
+            addResult(data);
+            System.out.println(data);
+            resultToFilePartial(data);
             if(foundAddress.equals(configuration.getTargetAddress())) {
                 return suspect;
             }

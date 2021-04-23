@@ -32,24 +32,29 @@ class WorkerRotate extends Worker {
         for (int c = 0; c < len; c++) {
             for (int z=0; z< Base58.ALPHABET.length ;z++) {
                 stringBuilder.setCharAt(c, Base58.ALPHABET[z]);
-                try {
-                    ecKey = DumpedPrivateKey.fromBase58(Configuration.getNetworkParameters(), stringBuilder.toString()).getKey();
-                    String foundAddress = this.configuration.isCompressed() ? LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey).toString()
-                            :LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey.decompress()).toString();
-                    if (configuration.getTargetAddress()!=null){
-                        if(foundAddress.equals(configuration.getTargetAddress())) {
-                            super.addResult(stringBuilder.toString() + " -> " + foundAddress);
-                            System.out.println(stringBuilder.toString() + " -> " + foundAddress);
-                            return;
-                        }
-                    }else{
-                        super.addResult(stringBuilder.toString() + " -> " + foundAddress);
-                        System.out.println(stringBuilder.toString() + " -> " + foundAddress);
-                    }
-                }catch (Exception e){
-                    stringBuilder = new StringBuilder(configuration.getWif());
-                }
+                test(stringBuilder.toString());
             }
         }
     }
+
+    private void test(String suspect) {
+        try {
+            ECKey ecKey = DumpedPrivateKey.fromBase58(Configuration.getNetworkParameters(), suspect).getKey();
+            String foundAddress = this.configuration.isCompressed() ? LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey).toString()
+                    : LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey.decompress()).toString();
+            if (configuration.getTargetAddress() != null) {
+                if (foundAddress.equals(configuration.getTargetAddress())) {
+                    super.addResult(suspect + " -> " + foundAddress);
+                    System.out.println(suspect + " -> " + foundAddress);
+                    return;
+                }
+            } else {
+                super.addResult(suspect + " -> " + foundAddress);
+                System.out.println(suspect + " -> " + foundAddress);
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
 }

@@ -54,8 +54,8 @@ class WorkerJump extends Worker {
                     bytes = hexStringToByteArray(priv.toString(16));
                     renew = bytes[33] != 1;
                 }
-            } while (count < 8192 && (renew || !priv.toString(16).endsWith(suffix)));
-            if (count==8192){
+            } while (count < 18192 && (renew || !priv.toString(16).endsWith(suffix)));
+            if (count == 18192) {
                 System.out.println(":-( Skipping " + STARTER + ", cannot find the proper ending");
                 return;
             }else{
@@ -85,7 +85,10 @@ class WorkerJump extends Worker {
         System.out.println("Jumping " + count+ " for " + STARTER);
         BigInteger toAdd =DIFF.multiply(BigInteger.valueOf(count));
         BigInteger threadDiff = toAdd.multiply(BigInteger.valueOf(ITERATIONS_PER_THREAD));
-        priv = new BigInteger(hex, 16).add(DIFF.multiply(BigInteger.valueOf(firstJump)));
+        priv = new BigInteger(hex, 16);
+        if (firstJump < count) {
+            priv = priv.add(DIFF.multiply(BigInteger.valueOf(firstJump)));
+        }
         System.out.println("Root: " + priv.toString(16) + " " + Base58.encode(hexStringToByteArray(priv.toString(16))));
         if (check(priv)){
             return;
@@ -141,17 +144,19 @@ class WorkerJump extends Worker {
         try {
             ECKey ecKey = DumpedPrivateKey.fromBase58(Configuration.getNetworkParameters(), Base58.encode(bytes)).getKey();
             String encoded =  Base58.encode(bytes);
-            String foundAddress = encoded.length() == Configuration.COMPRESSED_WIF_LENGTH ? LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey).toString()
+            String foundAddress = configuration.isCompressed() ? LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey).toString()
                     :LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey.decompress()).toString();
+            String data = encoded + " -> " + foundAddress;
             if(configuration.getTargetAddress().equals(foundAddress)){
-                super.addResult(encoded + " -> " + foundAddress);
-                System.out.println(encoded + " -> " + foundAddress);
+                super.addResult(data);
+                System.out.println(data);
                 RESULT = encoded;
                 return true;
             }else{
-                super.addResult(encoded + " -> " + foundAddress);
-                System.out.println(encoded + " -> " + foundAddress);
+                super.addResult(data);
+                System.out.println(data);
             }
+            resultToFilePartial(data);
         }catch (Exception e){
             //incorrect wif
         }
@@ -164,14 +169,21 @@ class WorkerJump extends Worker {
             if (configuration.getWif().charAt(i)==Configuration.UNKNOWN_CHAR){
                 DIFF = BigInteger.ONE.multiply(BigInteger.valueOf(58L)).pow(p);
                 System.out.println("DIFF: 58^" + p);
-//                if (p < 31) {
-//                    suffixLen--;
-//                    if (p < 28) {
-//                        suffixLen--;
-//                    }
-//                }
+                if (p < 30 && !configuration.isCompressed()) {
+                    suffixLen--;
+                    if (p < 28) {
+                        suffixLen--;
+                        if (p < 24) {
+                            suffixLen--;
+                        }
+                    }
+                }
                 break;
             }
+        }
+        if (DIFF == null) {
+            System.out.print("Nothing to do?");
+            System.exit(-1);
         }
         if (configuration.getWifStatus()==null){
             STARTER = configuration.getWif().replaceAll(String.valueOf(Configuration.UNKNOWN_CHAR),String.valueOf(Base58.ALPHABET[0]));

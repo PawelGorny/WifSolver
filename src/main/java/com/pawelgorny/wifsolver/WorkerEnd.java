@@ -24,14 +24,7 @@ class WorkerEnd extends Worker {
     }
 
     private static boolean arrFinished(int[] array, int arrLimit) {
-        boolean first = true;
-        for (int i : array) {
-            if (first && i < arrLimit) {
-                return false;
-            }
-            first = false;
-        }
-        return true;
+        return !(array[0] < arrLimit);
     }
 
     private static void increment58(int[] array) {
@@ -75,7 +68,7 @@ class WorkerEnd extends Worker {
                     try {
                         int[] arr = new int[missing - Configuration.getChecksumChars()];
                         arr[0] = tNr * step;
-                        final int arrLimit = Math.min(57, (tNr + 1) * step);
+                        final int arrLimit = Math.min(58, (tNr + 1) * step);
                         StringBuilder stringBuilderThread = new StringBuilder(expectedLength);
                         long start = System.currentTimeMillis();
                         while (!found && !arrFinished(arr, arrLimit)) {

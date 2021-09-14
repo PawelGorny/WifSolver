@@ -1,9 +1,6 @@
 package com.pawelgorny.wifsolver;
 
-import org.bitcoinj.core.Base58;
-import org.bitcoinj.core.DumpedPrivateKey;
-import org.bitcoinj.core.ECKey;
-import org.bitcoinj.core.LegacyAddress;
+import org.bitcoinj.core.*;
 
 class WorkerRotate extends Worker {
 
@@ -29,24 +26,29 @@ class WorkerRotate extends Worker {
         }catch (Exception e){
             System.out.println("Initial "+configuration.getWif()+" incorrect, starting rotation");
         }
+        mainLoop:
         for (int c = 0; c < len; c++) {
             for (int z=0; z< Base58.ALPHABET.length ;z++) {
                 stringBuilder.setCharAt(c, Base58.ALPHABET[z]);
-                test(stringBuilder.toString());
+                if (test(stringBuilder.toString())) {
+                    break mainLoop;
+                }
+                stringBuilder.replace(0, len, configuration.getWif());
             }
         }
     }
 
-    private void test(String suspect) {
+    private boolean test(String suspect) {
         try {
             ECKey ecKey = DumpedPrivateKey.fromBase58(Configuration.getNetworkParameters(), suspect).getKey();
-            String foundAddress = this.configuration.isCompressed() ? LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey).toString()
-                    : LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey.decompress()).toString();
+            Address foundAddress = this.configuration.isCompressed() ? LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey)
+                    : LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey.decompress());
             if (configuration.getTargetAddress() != null) {
-                if (foundAddress.equals(configuration.getTargetAddress())) {
+                if (foundAddress.equals(configuration.getAddress())) {
                     super.addResult(suspect + " -> " + foundAddress);
+                    System.out.println("Expected address found:");
                     System.out.println(suspect + " -> " + foundAddress);
-                    return;
+                    return true;
                 }
             } else {
                 super.addResult(suspect + " -> " + foundAddress);
@@ -55,6 +57,7 @@ class WorkerRotate extends Worker {
         } catch (Exception e) {
 
         }
+        return false;
     }
 
 }

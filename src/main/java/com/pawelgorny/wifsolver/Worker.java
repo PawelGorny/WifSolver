@@ -1,9 +1,6 @@
 package com.pawelgorny.wifsolver;
 
-import org.bitcoinj.core.Base58;
-import org.bitcoinj.core.DumpedPrivateKey;
-import org.bitcoinj.core.ECKey;
-import org.bitcoinj.core.LegacyAddress;
+import org.bitcoinj.core.*;
 
 import javax.mail.MessagingException;
 import javax.mail.Transport;
@@ -115,13 +112,15 @@ class Worker {
                 return null;
             }
             ECKey ecKey = DumpedPrivateKey.fromBase58(Configuration.getNetworkParameters(), suspect).getKey();
-            String foundAddress = this.configuration.isCompressed() ? LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey).toString()
-                    :LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey.decompress()).toString();
-            String data = suspect + " -> " + foundAddress;
+            if (!this.configuration.isCompressed()) {
+                ecKey = ecKey.decompress();
+            }
+            Address foundAddress = LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey);
+            String data = suspect + " -> " + foundAddress.toString();
             addResult(data);
             System.out.println(data);
             resultToFilePartial(data);
-            if(foundAddress.equals(configuration.getTargetAddress())) {
+            if (foundAddress.equals(configuration.getAddress())) {
                 return suspect;
             }
         }catch (Exception ex){

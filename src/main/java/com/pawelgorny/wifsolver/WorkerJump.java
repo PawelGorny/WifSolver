@@ -1,9 +1,6 @@
 package com.pawelgorny.wifsolver;
 
-import org.bitcoinj.core.Base58;
-import org.bitcoinj.core.DumpedPrivateKey;
-import org.bitcoinj.core.ECKey;
-import org.bitcoinj.core.LegacyAddress;
+import org.bitcoinj.core.*;
 
 import java.math.BigInteger;
 import java.util.Date;
@@ -144,10 +141,10 @@ class WorkerJump extends Worker {
         try {
             ECKey ecKey = DumpedPrivateKey.fromBase58(Configuration.getNetworkParameters(), Base58.encode(bytes)).getKey();
             String encoded =  Base58.encode(bytes);
-            String foundAddress = configuration.isCompressed() ? LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey).toString()
-                    :LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey.decompress()).toString();
+            Address foundAddress = configuration.isCompressed() ? LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey)
+                    : LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey.decompress());
             String data = encoded + " -> " + foundAddress;
-            if(configuration.getTargetAddress().equals(foundAddress)){
+            if (configuration.getAddress().equals(foundAddress)) {
                 super.addResult(data);
                 System.out.println(data);
                 RESULT = encoded;

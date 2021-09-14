@@ -1,5 +1,7 @@
 package com.pawelgorny.wifsolver;
 
+import org.bitcoinj.core.Address;
+import org.bitcoinj.core.LegacyAddress;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.params.MainNetParams;
 
@@ -21,14 +23,20 @@ public class Configuration {
     private final String wifStatus;
     private final WORK work;
     private final Map<Integer, char[]> guess;
+    private Address address;
+    private byte[] addressHash;
     private boolean compressed;
 
     private EmailConfiguration emailConfiguration = null;
 
     public Configuration(String targetAddress, String wif, String wifStatus, WORK work, Map<Integer, char[]> guess) {
         this.targetAddress = targetAddress;
+        if (targetAddress != null) {
+            this.address = LegacyAddress.fromBase58(NETWORK_PARAMETERS, getTargetAddress());
+            this.addressHash = address.getHash();
+        }
         this.wif = wif;
-        this.compressed = wif.length() == COMPRESSED_WIF_LENGTH;
+        this.compressed = wif.length() == COMPRESSED_WIF_LENGTH || (WORK.END.equals(work) && (wif.startsWith("L") || wif.startsWith("K")));
         this.wifStatus = wifStatus;
         this.work = work;
         this.guess = guess.isEmpty()?null:guess;
@@ -48,6 +56,14 @@ public class Configuration {
 
     public String getTargetAddress() {
         return targetAddress;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public byte[] getAddressHash() {
+        return addressHash;
     }
 
     public String getWif() {

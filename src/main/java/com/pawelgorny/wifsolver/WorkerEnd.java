@@ -1,9 +1,6 @@
 package com.pawelgorny.wifsolver;
 
-import org.bitcoinj.core.Base58;
-import org.bitcoinj.core.DumpedPrivateKey;
-import org.bitcoinj.core.ECKey;
-import org.bitcoinj.core.LegacyAddress;
+import org.bitcoinj.core.*;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -36,11 +33,11 @@ class WorkerEnd extends Worker {
 
     protected void run() throws InterruptedException {
         String wif = configuration.getWif();
-        String address = configuration.getTargetAddress();
 
         int len = 51;
         if (wif.startsWith("L")||wif.startsWith("K")){
             len = Configuration.COMPRESSED_WIF_LENGTH;
+            System.out.println("Looking for compressed address");
         }
         int missing = len - wif.length();
         if (missing <= 0) {
@@ -81,7 +78,7 @@ class WorkerEnd extends Worker {
                             for (int anArr : arr) {
                                 stringBuilderThread.append(Base58.ALPHABET[anArr]);
                             }
-                            lastTested[tNr] = checksumCheck(Configuration.getChecksumChars(), stringBuilderThread.toString(), expectedLength, address, lastTested[tNr]);
+                            lastTested[tNr] = checksumCheck(Configuration.getChecksumChars(), stringBuilderThread.toString(), expectedLength, configuration.getAddress(), lastTested[tNr]);
                             if (found) {
                                 break;
                             }
@@ -101,7 +98,7 @@ class WorkerEnd extends Worker {
         }
     }
 
-    private String checksumCheck(int missing, String wif, int len, final String address, String lastTested) {
+    private String checksumCheck(int missing, String wif, int len, final Address targetAddress, String lastTested) {
         StringBuilder sb = new StringBuilder(len);
         sb.append(wif);
         for (int m = 0; m < missing; m++) {
@@ -118,10 +115,12 @@ class WorkerEnd extends Worker {
         }
         if (encoded.startsWith(configuration.getWif())) {
             ECKey ecKey = DumpedPrivateKey.fromBase58(Configuration.getNetworkParameters(), encoded).getKey();
-            String foundAddress = len == Configuration.COMPRESSED_WIF_LENGTH ? LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey).toString()
-                    : LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey.decompress()).toString();
-            if (address != null) {
-                if (foundAddress.equals(address)) {
+            if (!configuration.isCompressed()) {
+                ecKey = ecKey.decompress();
+            }
+            Address foundAddress = LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey);
+            if (targetAddress != null) {
+                if (foundAddress.equals(targetAddress)) {
                     found = true;
                     super.addResult(encoded + " -> " + foundAddress);
                     System.out.println(encoded + " -> " + foundAddress);

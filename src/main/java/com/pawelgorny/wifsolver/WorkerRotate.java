@@ -33,8 +33,8 @@ class WorkerRotate extends Worker {
                 if (test(stringBuilder.toString())) {
                     break mainLoop;
                 }
-                stringBuilder.replace(0, len, configuration.getWif());
             }
+            stringBuilder.replace(0, len, configuration.getWif());
         }
     }
 

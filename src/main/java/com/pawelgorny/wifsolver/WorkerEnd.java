@@ -118,14 +118,15 @@ class WorkerEnd extends Worker {
             if (!configuration.isCompressed()) {
                 ecKey = ecKey.decompress();
             }
-            Address foundAddress = LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey);
             if (targetAddress != null) {
-                if (foundAddress.equals(targetAddress)) {
+                if (Arrays.equals(ecKey.getPubKeyHash(), targetAddress.getHash())) {
+                    Address foundAddress = LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey);
                     found = true;
                     super.addResult(encoded + " -> " + foundAddress);
                     System.out.println(encoded + " -> " + foundAddress);
                 }
             } else {
+                Address foundAddress = LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey);
                 System.out.println(encoded + " -> " + foundAddress);
                 super.addResult(encoded + " -> " + foundAddress);
             }

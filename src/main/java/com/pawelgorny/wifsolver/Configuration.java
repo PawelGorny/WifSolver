@@ -15,7 +15,7 @@ public class Configuration {
 
     private final static NetworkParameters NETWORK_PARAMETERS = MainNetParams.get();
     private final static int STATUS_PERIOD = 60 * 1000; //1 minute
-    private final static int CHECKSUM_CHARS = 4; //safe option, could be more
+    private final static int CHECKSUM_CHARS = 5;
 
 
     private final String targetAddress;

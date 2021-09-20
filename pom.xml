@@ -6,7 +6,7 @@
 
     <groupId>com.pawelgorny</groupId>
     <artifactId>wifSolver</artifactId>
-    <version>0.5.3</version>
+    <version>0.5.4</version>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -38,7 +38,7 @@
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
-            <version>1.6.4</version>
+            <version>1.6.7</version>
         </dependency>
     </dependencies>
 

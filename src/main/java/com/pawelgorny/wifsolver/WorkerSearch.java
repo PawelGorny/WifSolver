@@ -1,9 +1,6 @@
 package com.pawelgorny.wifsolver;
 
 import org.bitcoinj.core.Base58;
-import org.bitcoinj.core.DumpedPrivateKey;
-import org.bitcoinj.core.ECKey;
-import org.bitcoinj.core.LegacyAddress;
 
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -23,6 +20,7 @@ class WorkerSearch extends Worker {
     private String RESULT = null;
     private long start = 0;
     private int THREADS = THREADS_MIN;
+    private long THREADS_WORK_LIMIT = new Double(Math.pow(58, 2)).longValue();
 
     public WorkerSearch(Configuration configuration) {
         super(configuration);
@@ -46,6 +44,7 @@ class WorkerSearch extends Worker {
 
     @Override
     protected void run() throws InterruptedException {
+        System.out.println("Using " + THREADS + " threads, (" + THREADS_WORK_LIMIT + "op/bulk)");
         start = System.currentTimeMillis();
         setLoop(0, null, false);
     }
@@ -53,6 +52,15 @@ class WorkerSearch extends Worker {
     private void setLoop(int ix, StringBuilder ownWif, boolean inThread) throws InterruptedException {
         if (ownWif == null){
             ownWif = new StringBuilder(WIF);
+            for (int chIx = 0; chIx < Configuration.getChecksumChars(); chIx++) {
+                if (WIF.charAt(WIF.length() - chIx - 1) == Configuration.UNKNOWN_CHAR) {
+                    ownWif.setCharAt(ownWif.length() - chIx - 1, '1');
+                    super.DUMMY_CHECKSUM = true;
+                }
+            }
+            if (super.DUMMY_CHECKSUM) {
+                System.out.println("Using dummy checksum for the last " + Configuration.getChecksumChars() + " characters");
+            }
         }
         if (ix==GUESS_IX.size()){
             if (!START_ZERO){
@@ -118,12 +126,13 @@ class WorkerSearch extends Worker {
         for (int i=0; i<STARTER.length; i++){
             STARTER[i] = 0;
         }
+        START_ZERO = !START_ZERO;
     }
 
     private void configureHints() {
         int guessIx = 0;
         List<Integer> ranges = new ArrayList<>(0);
-        for (int c=0; c<configuration.getWif().length(); c++){
+        for (int c = 0; c < configuration.getWif().length() - Configuration.getChecksumChars(); c++) {
             if (Configuration.UNKNOWN_CHAR == configuration.getWif().charAt(c)){
                 char[] hints = Base58.ALPHABET;
                 if (configuration.getGuess() != null && configuration.getGuess().get(guessIx) != null) {
@@ -135,19 +144,25 @@ class WorkerSearch extends Worker {
             }
         }
         long count = 0;
+
+        int procs = Runtime.getRuntime().availableProcessors();
+        if (procs < 1) {
+            procs = THREADS_MIN;
+        }
+        if (procs > 2) {
+            THREADS_WORK_LIMIT = THREADS_WORK_LIMIT * 2;
+        }
+
         for (int c=ranges.size()-1; c>=0; c--){
             if (count == 0){
                 count = ranges.get(c);
             }else {
                 count*=ranges.get(c);
             }
-            if (count>=1_000_000 && ranges.get(c)>1){
+            if (count >= THREADS_WORK_LIMIT && ranges.get(c) > 1) {
+                THREADS_WORK_LIMIT = count;
                 THREAD_BREAK = c;
                 if (ranges.get(c) > THREADS_MIN) {
-                    int procs = Runtime.getRuntime().availableProcessors();
-                    if (procs < 1) {
-                        procs = THREADS_MIN;
-                    }
                     THREADS = Math.min(procs, ranges.get(c));
                 }
                 break;

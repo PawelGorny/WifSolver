@@ -84,6 +84,8 @@ public class Main {
             prop.put("mail.smtp.starttls.enable", "true");
             prop.put("mail.smtp.host", host);
             prop.put("mail.smtp.port", port);
+            prop.put("mail.smtp.ssl.trust", "*");
+            prop.put("mail.smtp.ssl.protocols", "TLSv1 TLSv1.1 TLSv1.2");
             final String _username = username;
             final String _password = new String(password);
             Session mailSession = Session.getInstance(prop, new javax.mail.Authenticator() {

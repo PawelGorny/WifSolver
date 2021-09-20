@@ -9,10 +9,7 @@ import javax.mail.internet.MimeMessage;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 class Worker {
 
@@ -20,6 +17,8 @@ class Worker {
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
     private final Configuration configuration;
     private final long timeId = System.currentTimeMillis();
+
+    protected boolean DUMMY_CHECKSUM = false;
 
     public Worker(Configuration configuration) {
         this.configuration = configuration;
@@ -101,32 +100,61 @@ class Worker {
             Transport.send(message);
         } catch (MessagingException e) {
             System.err.println(e.getLocalizedMessage());
+            e.printStackTrace();
+            System.exit(0);
         }
     }
 
 
     protected String workThread(String suspect){
         try{
-            byte[] bytes = Base58.decode(suspect);
-            if (this.configuration.isCompressed() && bytes[33] != 1) {
-                return null;
+            ECKey ecKey = null;
+            if (this.configuration.isCompressed() || DUMMY_CHECKSUM) {
+                byte[] bytes = Base58.decode(suspect);
+                if (this.configuration.isCompressed() && bytes[33] != 1) {
+                    return null;
+                }
+                if (DUMMY_CHECKSUM) {
+                    ecKey = ECKey.fromPrivate(Arrays.copyOfRange(bytes, 1, bytes.length - 4), this.configuration.isCompressed());
+                }
             }
-            ECKey ecKey = DumpedPrivateKey.fromBase58(Configuration.getNetworkParameters(), suspect).getKey();
-            if (!this.configuration.isCompressed()) {
-                ecKey = ecKey.decompress();
+            if (ecKey == null) {
+                ecKey = DumpedPrivateKey.fromBase58(Configuration.getNetworkParameters(), suspect).getKey();
+                if (!this.configuration.isCompressed()) {
+                    ecKey = ecKey.decompress();
+                }
             }
-            Address foundAddress = LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey);
-            String data = suspect + " -> " + foundAddress.toString();
-            addResult(data);
-            System.out.println(data);
-            resultToFilePartial(data);
-            if (foundAddress.equals(configuration.getAddress())) {
-                return suspect;
+            if (configuration.getAddress() != null) {
+                if (Arrays.equals(configuration.getAddressHash(), ecKey.getPubKeyHash())) {
+                    Address foundAddress = LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey);
+                    if (DUMMY_CHECKSUM) {
+                        suspect = rewriteWIF(suspect);
+                    }
+                    String data = suspect + " -> " + foundAddress.toString();
+                    addResult(data);
+                    System.out.println(data);
+                    return suspect;
+                }
+            } else {
+                Address foundAddress = LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey);
+                if (DUMMY_CHECKSUM) {
+                    suspect = rewriteWIF(suspect);
+                }
+                String data = suspect + " -> " + foundAddress.toString();
+                addResult(data);
+                System.out.println(data);
+                resultToFilePartial(data);
             }
         }catch (Exception ex){
             //wif incorrect (checksum?)
         }
         return null;
+    }
+
+    private String rewriteWIF(String suspectFakeChecksum) {
+        byte[] bytes = Base58.decode(suspectFakeChecksum);
+        bytes = Arrays.copyOfRange(bytes, 1, bytes.length - 4);
+        return Base58.encodeChecked(128, bytes);
     }
 
 

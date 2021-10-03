@@ -25,6 +25,15 @@ Configuration file example (misspelled letter Z/z on 16 position):
     ROTATE
     L5EZftvrYaSudioZVRzTqLcHLNDoVn7H5HSfM9BAN6tMJX8oTWz6
 
+It is possible to indicate how many characters should be 'rotated', in this example configuration for solving WIF with 2 mistakes:
+
+    ROTATE
+    L5EzftvrYaSudioZVRzTqLcHLNDoVn7H5HSfM9BAN6tMJX8oTWz6,2
+    1EUXSxuUVy2PC5enGXR1a3yxbEjNWMHuem
+
+By default 1 and 2 mistakes are processed, if you want, you may specify the number of mistakes after comma (,) in broken WIF's line.
+
+
 <li>END</li>
 For solving WIF with missing characters at the end. Time needed depends on length of missing part, 7-8 characters should be found quickly.
 Configuration file example, with 8 characters missing and searching for particular address (optional). 

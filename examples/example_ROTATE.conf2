@@ -3,6 +3,6 @@
 #1st line: type of work
 ROTATE
 #target: L5EZftvrYaSudiozVRzTqLcHLNDoVn7H5HSfM9BAN6tMJX8oTWz6
-#2nd line: WIF with misspelled letter (Z/z on 16 position)
-L5EZftvrYaSudioZVRzTqLcHLNDoVn7H5HSfM9BAN6tMJX8oTWz6
+#2nd line: WIF with 2 misspelled letters (Z/z on 4&16 position)
+L5EzftvrYaSudioZVRzTqLcHLNDoVn7H5HSfM9BAN6tMJX8oTWz6,2
 1EUXSxuUVy2PC5enGXR1a3yxbEjNWMHuem

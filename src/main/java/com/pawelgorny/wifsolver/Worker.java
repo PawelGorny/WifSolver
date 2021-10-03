@@ -157,6 +157,9 @@ class Worker {
         return Base58.encodeChecked(128, bytes);
     }
 
+    protected long getResultsCount() {
+        return WIF_RESULTS.size();
+    }
 
 }
 

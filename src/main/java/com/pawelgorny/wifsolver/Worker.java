@@ -127,13 +127,19 @@ class Worker {
             if (configuration.getAddress() != null) {
                 if (Arrays.equals(configuration.getAddressHash(), ecKey.getPubKeyHash())) {
                     Address foundAddress = LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey);
+                    String data = suspect + " -> " + foundAddress.toString();
                     if (DUMMY_CHECKSUM) {
                         suspect = rewriteWIF(suspect);
                     }
-                    String data = suspect + " -> " + foundAddress.toString();
                     addResult(data);
                     System.out.println(data);
                     return suspect;
+                }
+                if (!configuration.getWork().equals(WORK.END)) {
+                    Address foundAddress = LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey);
+                    String data = suspect + " -> " + foundAddress.toString();
+                    addResult(data);
+                    System.out.println(data);
                 }
             } else {
                 Address foundAddress = LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey);

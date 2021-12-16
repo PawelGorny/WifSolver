@@ -6,7 +6,7 @@
 
     <groupId>com.pawelgorny</groupId>
     <artifactId>wifSolver</artifactId>
-    <version>0.5.6</version>
+    <version>0.5.7</version>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -18,17 +18,12 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>30.0-jre</version>
+            <version>31.0.1-jre</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.26</version>
-        </dependency>
-        <dependency>
-            <groupId>org.web3j</groupId>
-            <artifactId>crypto</artifactId>
-            <version>3.3.1</version>
+            <version>1.7.32</version>
         </dependency>
         <dependency>
             <groupId>javax.mail</groupId>

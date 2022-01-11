@@ -124,6 +124,7 @@ public class Main {
         String targetAddress = null;
         String wif = null;
         String wifStatus = null;
+        int forceThreads = -1;
         Map<Integer, char[]> guess = new HashMap<>();
         int guessPosition = 0;
         try {
@@ -134,7 +135,11 @@ public class Main {
                 }
                 switch (lineNumber){
                     case 0:
-                        work = WORK.valueOf(line);
+                        String[] workLine = line.split(",");
+                        work = WORK.valueOf(workLine[0]);
+                        if (workLine.length > 1) {
+                            forceThreads = Integer.valueOf(workLine[1]);
+                        }
                         break;
                     case 1:
                         String[] wifs = line.split(",");
@@ -167,7 +172,11 @@ public class Main {
                 //file problem?
             }
         }
-        return new Configuration(targetAddress, wif, wifStatus, work, guess);
+        Configuration c = new Configuration(targetAddress, wif, wifStatus, work, guess);
+        if (forceThreads > -1) {
+            c.setForceThreads(forceThreads);
+        }
+        return c;
     }
 
     private static char[] filterGuess(String characters){

@@ -116,6 +116,7 @@ class WorkerSearch extends Worker {
             START_ZERO = true;
             return;
         }
+        System.out.println("Configured start: '" + configuration.getWifStatus() + "'");
         for(Map.Entry<Integer, char[]> e:GUESS.entrySet()){
             STARTER[e.getKey()] = findIx(e.getValue(), configuration.getWifStatus().charAt(e.getKey()));
         }
@@ -167,6 +168,9 @@ class WorkerSearch extends Worker {
                 }
                 break;
             }
+        }
+        if (configuration.getForceThreads() != null) {
+            THREADS = configuration.getForceThreads();
         }
     }
 }

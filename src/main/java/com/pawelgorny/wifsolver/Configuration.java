@@ -27,6 +27,8 @@ public class Configuration {
     private byte[] addressHash;
     private boolean compressed;
 
+    private Integer forceThreads = null;
+
     private EmailConfiguration emailConfiguration = null;
 
     public Configuration(String targetAddress, String wif, String wifStatus, WORK work, Map<Integer, char[]> guess) {
@@ -92,6 +94,14 @@ public class Configuration {
 
     public boolean isCompressed() {
         return compressed;
+    }
+
+    public Integer getForceThreads() {
+        return forceThreads;
+    }
+
+    public void setForceThreads(Integer forceThreads) {
+        this.forceThreads = forceThreads;
     }
 
     class EmailConfiguration{

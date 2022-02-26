@@ -28,6 +28,9 @@ class WorkerEnd extends Worker {
         int i = array.length - 1;
         do {
             array[i] = (array[i] + 1) % 58;
+            if (i==0 && array[i]==0){
+                array[i] = 58;
+            }
         } while (array[i--] == 0 && i >= 0);
     }
 
@@ -140,5 +143,6 @@ class WorkerEnd extends Worker {
             procs = THREADS_MIN;
         }
         THREADS = Math.min(procs, 29);
+        THREADS = 1;
     }
 }

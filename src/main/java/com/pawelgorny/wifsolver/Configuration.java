@@ -17,7 +17,7 @@ public class Configuration {
     private final static int STATUS_PERIOD = 60 * 1000; //1 minute
     private final static int CHECKSUM_CHARS = 5;
 
-
+    private Boolean isP2SH;
     private final String targetAddress;
     private final String wif;
     private final String wifStatus;
@@ -33,9 +33,15 @@ public class Configuration {
 
     public Configuration(String targetAddress, String wif, String wifStatus, WORK work, Map<Integer, char[]> guess) {
         this.targetAddress = targetAddress;
+        isP2SH = false;
         if (targetAddress != null) {
-            this.address = LegacyAddress.fromBase58(NETWORK_PARAMETERS, getTargetAddress());
-            this.addressHash = address.getHash();
+            if (targetAddress.startsWith("3")){
+                compressed = true;
+                isP2SH = true;
+            }else {
+                this.address = LegacyAddress.fromBase58(NETWORK_PARAMETERS, getTargetAddress());
+                this.addressHash = address.getHash();
+            }
         }
         this.wif = wif;
         this.compressed = wif.length() == COMPRESSED_WIF_LENGTH || (WORK.END.equals(work) && (wif.startsWith("L") || wif.startsWith("K")));
@@ -102,6 +108,10 @@ public class Configuration {
 
     public void setForceThreads(Integer forceThreads) {
         this.forceThreads = forceThreads;
+    }
+
+    public Boolean getIsP2SH() {
+        return isP2SH;
     }
 
     class EmailConfiguration{

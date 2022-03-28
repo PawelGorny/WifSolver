@@ -1,6 +1,9 @@
 package com.pawelgorny.wifsolver;
 
 import org.bitcoinj.core.*;
+import org.bitcoinj.script.Script;
+import org.bitcoinj.script.ScriptBuilder;
+import org.bitcoinj.script.ScriptPattern;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -121,12 +124,24 @@ class WorkerEnd extends Worker {
             if (!configuration.isCompressed()) {
                 ecKey = ecKey.decompress();
             }
-            if (targetAddress != null) {
-                if (Arrays.equals(ecKey.getPubKeyHash(), targetAddress.getHash())) {
-                    Address foundAddress = LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey);
-                    found = true;
-                    super.addResult(encoded + " -> " + foundAddress);
-                    System.out.println(encoded + " -> " + foundAddress);
+            if (targetAddress != null || configuration.getIsP2SH()) {
+                if (configuration.getIsP2SH()){
+                    Script redeemScript = ScriptBuilder.createP2WPKHOutputScript(ecKey);
+                    Script script = ScriptBuilder.createP2SHOutputScript(redeemScript);
+                    byte[] scriptHash = ScriptPattern.extractHashFromP2SH(script);
+                    LegacyAddress foundAddress = LegacyAddress.fromScriptHash(configuration.getNetworkParameters(), scriptHash);
+                    if (foundAddress.toString().equals(configuration.getTargetAddress())){
+                        found = true;
+                        super.addResult(encoded + " -> " + foundAddress);
+                        System.out.println(encoded + " -> " + foundAddress);
+                    }
+                }else {
+                    if (Arrays.equals(ecKey.getPubKeyHash(), targetAddress.getHash())) {
+                        Address foundAddress = LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey);
+                        found = true;
+                        super.addResult(encoded + " -> " + foundAddress);
+                        System.out.println(encoded + " -> " + foundAddress);
+                    }
                 }
             } else {
                 Address foundAddress = LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey);

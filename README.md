@@ -60,6 +60,20 @@ In this mode it is possible to resume search from the last known position (repor
 
     L5EZftvrYaSudiozVRzTqLcHLND____H_HSfM9BAN6tMJX8oTWz6,L5EZftvrYaSudiozVRzTqLcHLNDckk2H5HSfM9BAN6tMJX8oTWz6
 
+When WIF is configured with missing end, program launched "dummy checksum" mode, where the last **5** characters are not calculated and checked. WIF is decoded without checking checksum and the program verifies decoded part (extracted private key).
+Example of configuration where we have 3 missing characters in the middle (with hints) and 8 missing characters at the end (unknown):
+
+    SEARCH
+    5KKKKKKKKKKKKKKKK_KKKKKK_KKKKKKK_KKKKKKKKKK________
+    19NzcPZvZMSNQk8sDbSiyjeKpEVpaS1212
+    abcK
+    123K
+    abcK
+    
+
+   
+
+
 <li>ALIKE</li>
 This mode is similar to SEARCH, but instead of defining sets per position user may define groups of letters which will be tested instead of original one.
 For example defining gruup `2Zz` means that during work each instance of 2 or z or Z will be replaced by one of the other characters in the group.

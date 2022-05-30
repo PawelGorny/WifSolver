@@ -6,7 +6,7 @@
 
     <groupId>com.pawelgorny</groupId>
     <artifactId>wifSolver</artifactId>
-    <version>0.5.9</version>
+    <version>0.5.10</version>
     <packaging>jar</packaging>
 
     <dependencies>

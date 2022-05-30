@@ -135,7 +135,7 @@ class Worker {
                     System.out.println(data);
                     return suspect;
                 }
-                if (!WORK.END.equals(configuration.getWork())) {
+                if (!WORK.END.equals(configuration.getWork()) && !(WORK.SEARCH.equals(configuration.getWork()) && DUMMY_CHECKSUM)) {
                     Address foundAddress = LegacyAddress.fromKey(Configuration.getNetworkParameters(), ecKey);
                     String data = suspect + " -> " + foundAddress.toString() + " [" + ecKey.getPrivateKeyAsHex() + "]";
                     addResult(data);

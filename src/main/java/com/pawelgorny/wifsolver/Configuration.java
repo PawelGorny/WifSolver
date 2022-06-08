@@ -16,6 +16,7 @@ public class Configuration {
     private final static NetworkParameters NETWORK_PARAMETERS = MainNetParams.get();
     private final static int STATUS_PERIOD = 60 * 1000; //1 minute
     private final static int CHECKSUM_CHARS = 5;
+    private final static int CHECKSUM_CHARS_COMPRESSED = 6;
 
     private Boolean isP2SH;
     private final String targetAddress;
@@ -51,7 +52,10 @@ public class Configuration {
     }
 
     public static int getChecksumChars() {
-        return CHECKSUM_CHARS;
+        return getChecksumChars(false);
+    }
+    public static int getChecksumChars(boolean compressed) {
+        return compressed?CHECKSUM_CHARS_COMPRESSED:CHECKSUM_CHARS;
     }
 
     public static NetworkParameters getNetworkParameters() {

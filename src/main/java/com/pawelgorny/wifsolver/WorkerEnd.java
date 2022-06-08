@@ -39,9 +39,10 @@ class WorkerEnd extends Worker {
 
     protected void run() throws InterruptedException {
         String wif = configuration.getWif();
-
+        boolean compressed = false;
         int len = 51;
         if (wif.startsWith("L")||wif.startsWith("K")){
+            compressed = true;
             len = Configuration.COMPRESSED_WIF_LENGTH;
             System.out.println("Looking for compressed address");
         }
@@ -50,11 +51,11 @@ class WorkerEnd extends Worker {
             System.out.println("nothing to do?");
             System.exit(0);
         }
-        if (missing <= Configuration.getChecksumChars()) {
+        if (missing <= Configuration.getChecksumChars(compressed)) {
             System.out.println("Missing less than " + Configuration.getChecksumChars() + " last characters, quick check launched");
             checksumCheck(missing, wif, len, null, "");
         } else {
-            if (missing - Configuration.getChecksumChars() > 3) {
+            if (missing - Configuration.getChecksumChars(compressed) >= 3) {
                 setThreads();
                 System.out.println("Using " + THREADS + " threads");
             }
@@ -67,9 +68,10 @@ class WorkerEnd extends Worker {
                 final boolean reporter = t == 0;
                 final int tNr = t;
                 final int expectedLength = len;
+                final boolean _compressed = compressed;
                 executorService.submit(() -> {
                     try {
-                        int[] arr = new int[missing - Configuration.getChecksumChars()];
+                        int[] arr = new int[missing - Configuration.getChecksumChars(_compressed)];
                         arr[0] = tNr * step;
                         final int arrLimit = Math.min(58, (tNr + 1) * step);
                         StringBuilder stringBuilderThread = new StringBuilder(expectedLength);
@@ -84,7 +86,7 @@ class WorkerEnd extends Worker {
                             for (int anArr : arr) {
                                 stringBuilderThread.append(Base58.ALPHABET[anArr]);
                             }
-                            lastTested[tNr] = checksumCheck(Configuration.getChecksumChars(), stringBuilderThread.toString(), expectedLength, configuration.getAddress(), lastTested[tNr]);
+                            lastTested[tNr] = checksumCheck(Configuration.getChecksumChars(_compressed), stringBuilderThread.toString(), expectedLength, configuration.getAddress(), lastTested[tNr]);
                             if (found) {
                                 break;
                             }
@@ -158,6 +160,5 @@ class WorkerEnd extends Worker {
             procs = THREADS_MIN;
         }
         THREADS = Math.min(procs, 29);
-        THREADS = 1;
     }
 }
